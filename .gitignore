@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+.env
+venv/
+
+# Flutter
+.dart_tool/
+build/
+
+# VSCode
+.vscode/
