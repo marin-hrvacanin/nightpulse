@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
 from passlib.context import CryptContext
-from .database import engine, get_db
+from .database import engine, get_db, apply_sql_schema
 from . import models
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

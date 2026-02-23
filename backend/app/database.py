@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
 
@@ -17,3 +17,17 @@ def get_db():
         yield db
     finally:
         db.close()
+
+def apply_sql_schema(file_path: str):
+    """
+    Marin's special function for reading external
+    SQL file instead of using models.py for SQL practice :)
+    """
+    with open(file_path, "r") as f:
+        sql_script = f.read()
+    
+    with engine.connect() as connection:
+        with connection.begin():
+            response = connection.execute(text(sql_script))
+    print(response)
+    print("SQL Schema Applied Successfully!")
