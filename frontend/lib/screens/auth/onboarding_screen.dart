@@ -91,7 +91,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Select your favorite genres to personalize your feed.',
+                  'Odaberi omiljene žanrove za personalizirani feed.',
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     color: AppColors.textSecondary,

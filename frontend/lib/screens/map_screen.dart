@@ -3,8 +3,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import '../theme/app_theme.dart';
-import '../data/mock_data.dart';
 import '../models/club.dart';
+import '../services/api_service.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -16,6 +16,18 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final MapController _mapController = MapController();
   Club? _selectedClub;
+  List<Club> _clubs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadClubs();
+  }
+
+  Future<void> _loadClubs() async {
+    final clubs = await ApiService.getClubs();
+    if (mounted) setState(() => _clubs = clubs);
+  }
 
   void _onMarkerTap(Club club) {
     setState(() => _selectedClub = club);
@@ -40,7 +52,7 @@ class _MapScreenState extends State<MapScreen> {
               userAgentPackageName: 'com.nightpulse.app',
             ),
             MarkerLayer(
-              markers: mockClubs.map((club) {
+              markers: _clubs.map((club) {
                 final isSelected = _selectedClub?.id == club.id;
                 return Marker(
                   point: LatLng(club.latitude, club.longitude),
@@ -104,7 +116,7 @@ class _MapScreenState extends State<MapScreen> {
                             color: AppColors.textSecondary, size: 20),
                         const SizedBox(width: 10),
                         Text(
-                          'Search on map...',
+                          'Pretraži na karti...',
                           style: GoogleFonts.inter(
                             color: AppColors.textSecondary,
                             fontSize: 14,
@@ -263,19 +275,19 @@ class _ClubPreviewSheet extends StatelessWidget {
                 Row(
                   children: [
                     _QuickStat(
-                      icon: Icons.euro_rounded,
-                      label: '${club.entryPrice.toInt()}€',
-                      subtitle: 'Entry',
+                      icon: Icons.groups_rounded,
+                      label: club.crowdRating > 0 ? '${club.crowdRating}/5' : '-',
+                      subtitle: 'Gužva',
                     ),
                     _QuickStat(
                       icon: Icons.access_time_rounded,
                       label: '${club.queueMinutes}m',
-                      subtitle: 'Queue',
+                      subtitle: 'Red',
                     ),
                     _QuickStat(
                       icon: Icons.update_rounded,
                       label: club.lastUpdated,
-                      subtitle: 'Updated',
+                      subtitle: 'Ažurirano',
                     ),
                   ],
                 ),

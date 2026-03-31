@@ -1,13 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
+import '../services/api_service.dart';
 import 'auth/login_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  Map<String, dynamic>? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await ApiService.getMe();
+    if (mounted) setState(() => _user = user);
+  }
+
+  void _logout() async {
+    await ApiService.clearTokens();
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
+  void _deleteAccount() async {
+    final success = await ApiService.deleteAccount();
+    if (success && mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final name = _user?['full_name'] ?? 'Korisnik';
+    final email = _user?['email'] ?? '';
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 22),
@@ -16,7 +57,7 @@ class ProfileScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 20),
             Text(
-              'Profile',
+              'Profil',
               style: GoogleFonts.inter(
                 fontSize: 26,
                 fontWeight: FontWeight.w800,
@@ -51,7 +92,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    'Hej, Marko!',
+                    'Hej, $name!',
                     style: GoogleFonts.inter(
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
@@ -60,7 +101,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'marko@nightpulse.com',
+                    email,
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       color: AppColors.textSecondary,
@@ -80,18 +121,18 @@ class ProfileScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  _StatItem(value: '24', label: 'Reviews'),
+                  _StatItem(value: '24', label: 'Recenzije'),
                   Container(width: 1, height: 36, color: AppColors.border),
-                  _StatItem(value: '12', label: 'Clubs'),
+                  _StatItem(value: '12', label: 'Klubovi'),
                   Container(width: 1, height: 36, color: AppColors.border),
-                  _StatItem(value: '156', label: 'Points'),
+                  _StatItem(value: '156', label: 'Bodovi'),
                 ],
               ),
             ),
             const SizedBox(height: 28),
             // Menu items
             Text(
-              'SETTINGS',
+              'POSTAVKE',
               style: GoogleFonts.inter(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -103,25 +144,25 @@ class ProfileScreen extends StatelessWidget {
             _MenuItem(
               icon: Icons.person_outline_rounded,
               label: 'Postavke profila',
-              subtitle: 'Name, photo, preferences',
+              subtitle: 'Ime, slika, preferencije',
               onTap: () {},
             ),
             _MenuItem(
               icon: Icons.shield_outlined,
               label: 'Sigurnost',
-              subtitle: 'Password, two-factor auth',
+              subtitle: 'Lozinka, dvofaktorska auth',
               onTap: () {},
             ),
             _MenuItem(
               icon: Icons.info_outline_rounded,
               label: 'O aplikaciji',
-              subtitle: 'Version 1.0.0',
+              subtitle: 'Verzija 1.0.0',
               onTap: () {},
             ),
             _MenuItem(
               icon: Icons.dark_mode_outlined,
-              label: 'Appearance',
-              subtitle: 'Dark mode (always on)',
+              label: 'Izgled',
+              subtitle: 'Tamni način (uvijek uključen)',
               onTap: () {},
             ),
             const SizedBox(height: 32),
@@ -130,15 +171,10 @@ class ProfileScreen extends StatelessWidget {
               width: double.infinity,
               height: 52,
               child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    (route) => false,
-                  );
-                },
+                onPressed: _logout,
                 icon: const Icon(Icons.logout_rounded, size: 20),
                 label: Text(
-                  'Log Out',
+                  'Odjavi se',
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -166,14 +202,14 @@ class ProfileScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       title: Text(
-                        'Delete Account?',
+                        'Obrisati račun?',
                         style: GoogleFonts.inter(
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
                       ),
                       content: Text(
-                        'This action cannot be undone. All your data will be permanently removed.',
+                        'Ova radnja se ne može poništiti. Svi tvoji podaci bit će trajno uklonjeni.',
                         style: GoogleFonts.inter(
                           color: AppColors.textSecondary,
                           fontSize: 14,
@@ -183,7 +219,7 @@ class ProfileScreen extends StatelessWidget {
                         TextButton(
                           onPressed: () => Navigator.of(ctx).pop(),
                           child: Text(
-                            'Cancel',
+                            'Odustani',
                             style: GoogleFonts.inter(
                               color: AppColors.textSecondary,
                               fontWeight: FontWeight.w600,
@@ -191,9 +227,12 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ),
                         TextButton(
-                          onPressed: () => Navigator.of(ctx).pop(),
+                          onPressed: () {
+                            Navigator.of(ctx).pop();
+                            _deleteAccount();
+                          },
                           child: Text(
-                            'Delete',
+                            'Obriši',
                             style: GoogleFonts.inter(
                               color: AppColors.error,
                               fontWeight: FontWeight.w600,
@@ -205,7 +244,7 @@ class ProfileScreen extends StatelessWidget {
                   );
                 },
                 child: Text(
-                  'Delete Account',
+                  'Obriši račun',
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,

@@ -33,13 +33,24 @@ class ClubCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // Pattern overlay
-            Positioned.fill(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: CustomPaint(painter: _PatternPainter()),
+            // Photo or pattern fallback
+            if (club.imageAsset != null)
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    club.imageAsset!,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              )
+            else
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: CustomPaint(painter: _PatternPainter()),
+                ),
               ),
-            ),
             // Dark gradient overlay at bottom
             Positioned.fill(
               child: DecoratedBox(
@@ -113,7 +124,7 @@ class ClubCard extends StatelessWidget {
                     children: [
                       _StatChip(
                         icon: Icons.local_fire_department_rounded,
-                        label: '${club.crowdRating}',
+                        label: club.crowdRating > 0 ? '${club.crowdRating}' : '-',
                         color: const Color(0xFFFF6D00),
                       ),
                       const SizedBox(width: 8),
@@ -121,12 +132,6 @@ class ClubCard extends StatelessWidget {
                         icon: Icons.music_note_rounded,
                         label: club.currentGenre,
                         color: AppColors.tertiary,
-                      ),
-                      const SizedBox(width: 8),
-                      _StatChip(
-                        icon: Icons.euro_rounded,
-                        label: '${club.entryPrice.toInt()}€',
-                        color: AppColors.primary,
                       ),
                       const SizedBox(width: 8),
                       _StatChip(

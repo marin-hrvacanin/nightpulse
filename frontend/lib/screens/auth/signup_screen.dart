@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
+import '../../services/api_service.dart';
 import 'onboarding_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -15,6 +16,8 @@ class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _loading = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -24,10 +27,26 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  void _signup() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+  void _signup() async {
+    if (_nameController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty) return;
+    setState(() { _loading = true; _error = null; });
+
+    final result = await ApiService.register(
+      _emailController.text.trim(),
+      _passwordController.text,
+      _nameController.text.trim(),
     );
+
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    if (result['success'] == true) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+      );
+    } else {
+      setState(() => _error = result['error'] as String?);
+    }
   }
 
   @override
@@ -86,7 +105,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Create your account to get started.',
+                  'Kreiraj račun i započni.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 32),
@@ -95,7 +114,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   controller: _nameController,
                   style: GoogleFonts.inter(color: Colors.white),
                   decoration: const InputDecoration(
-                    hintText: 'Full Name',
+                    hintText: 'Ime i prezime',
                     prefixIcon: Icon(Icons.person_outline, color: AppColors.textSecondary),
                   ),
                 ),
@@ -117,7 +136,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   obscureText: _obscurePassword,
                   style: GoogleFonts.inter(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: 'Password',
+                    hintText: 'Lozinka',
                     prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textSecondary),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -150,7 +169,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                     ),
-                    child: const Text('Sign Up'),
+                    child: const Text('Registriraj se'),
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -159,13 +178,13 @@ class _SignupScreenState extends State<SignupScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Already have an account? ',
+                        'Već imaš račun? ',
                         style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 14),
                       ),
                       GestureDetector(
                         onTap: () => Navigator.of(context).pop(),
                         child: Text(
-                          'Log In',
+                          'Prijavi se',
                           style: GoogleFonts.inter(
                             color: AppColors.primary,
                             fontSize: 14,
